@@ -1,9 +1,0 @@
-{
-  "name": "arnes",
-  "version": "0.2.0",
-  "description": "Arnés de trabajo: agentes revisor, simplificador y verificador, y un hook que protege el hardware al grabar firmware. Todo respeta las reglas del CLAUDE.md de cada proyecto (tareas aprobadas, definición de terminado, español).",
-  "author": {
-    "name": "jhogarciacu"
-  },
-  "keywords": ["revision", "calidad", "flujo-de-trabajo", "espanol", "firmware", "hardware"]
-}

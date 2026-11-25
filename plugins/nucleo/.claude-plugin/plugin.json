@@ -1,0 +1,9 @@
+{
+  "name": "nucleo",
+  "version": "0.3.0",
+  "description": "Núcleo del arnés: agentes verificador, simplificador y revisor, y protección de hardware al grabar firmware. Se instala una vez para todos los proyectos; las áreas (firmware, hardware, software, ia, sistema) se activan por proyecto.",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "keywords": ["revision", "calidad", "flujo-de-trabajo", "espanol", "firmware", "hardware"]
+}

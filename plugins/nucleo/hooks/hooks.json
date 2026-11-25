@@ -1,0 +1,29 @@
+{
+  "description": "Núcleo del arnés: anuncia el arnés al empezar la sesión y protege el hardware (pide confirmación antes de grabar o borrar firmware y bloquea eFuses, fuses, lock bits, option bytes y OTP).",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/anunciar.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/proteger_hardware.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
