@@ -1,0 +1,13 @@
+{
+  "name": "claude-code-harness",
+  "owner": {
+    "name": "jhogarciacu"
+  },
+  "plugins": [
+    {
+      "name": "arnes",
+      "source": "./",
+      "description": "Agentes revisor, simplificador y verificador, y hook de protección de hardware, con las reglas de trabajo propias."
+    }
+  ]
+}
