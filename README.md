@@ -1,16 +1,17 @@
 # claude-code-harness
 
-Arnés de trabajo propio para Claude Code, reutilizable en cualquier proyecto:
+Arnés de trabajo propio para Claude Code. Tiene un **núcleo** que se instala una vez y vale para todos los proyectos, y **áreas** que se activan solo en los proyectos que las necesitan.
 
-| Pieza | Dónde | Qué hace |
+| Plugin | Estado | Qué trae |
 |---|---|---|
-| **CLAUDE.md global** | `global/CLAUDE.md` → enlazado a `~/.claude/CLAUDE.md` | Reglas generales: español, tareas aprobadas, explicar antes de arrancar, git por ramas, honestidad al reportar, seguridad |
-| **Agente `revisor`** | `agents/revisor.md` | Revisa el cambio de la rama **sin modificar nada**: errores, seguridad, reglas del CLAUDE.md del proyecto y definición de terminado |
-| **Agente `simplificador`** | `agents/simplificador.md` | Simplifica el código cambiado **sin alterar su comportamiento**. Propone por defecto y aplica si se le pide, con las pruebas en verde |
-| **Agente `verificador`** | `agents/verificador.md` | Ejecuta pruebas, lint, formato y chequeos del proyecto y reporta qué pasó y qué **no** se pudo verificar |
-| **Hook `proteger_hardware`** | `hooks/` | Antes de cada comando de shell: **pide confirmación** si graba o borra firmware y **bloquea** lo irreversible (eFuses, fuses, lock bits, option bytes, RDP, OTP) |
+| `nucleo` | ✅ disponible | Agentes verificador, simplificador y revisor. Protección de hardware al grabar firmware. Anuncio "Arnés activo" al empezar la sesión |
+| `firmware` | ⏳ A-03 | Reglas y lista de revisión de firmware |
+| `hardware` | ⏳ A-05 | KiCad: ERC/DRC, BOM y límites eléctricos |
+| `software` | ⏳ A-06 | Optimización con medición y benchmarks |
+| `ia` | ⏳ A-07 | Seguridad MCP, evals, datasets |
+| `sistema` | ⏳ A-08 | Proyecto completo: las cinco áreas y el contrato entre capas |
 
-Los agentes son genéricos: leen el `CLAUDE.md` de cada proyecto, y **las reglas del proyecto mandan** sobre las globales.
+Las reglas generales están en `global/CLAUDE.md`, enlazado a `~/.claude/CLAUDE.md`: español, tareas aprobadas, git por ramas, honestidad al reportar y seguridad. Los agentes leen además el `CLAUDE.md` de cada proyecto, y **las reglas del proyecto mandan** sobre las globales.
 
 ## Instalación (una vez por computador)
 ```bash
@@ -20,12 +21,33 @@ git clone git@github.com:jhogarciacu/claude-code-harness.git ~/Escritorio/proyec
 Luego, dentro de Claude Code (terminal o VSCode):
 ```
 /plugin marketplace add ~/Escritorio/proyectos/claude-arnes
-/plugin install arnes@claude-code-harness
+/plugin install nucleo@claude-code-harness
 ```
-Para instalarlo desde GitHub en vez de la carpeta local: `/plugin marketplace add jhogarciacu/claude-code-harness` (si el repo es privado, requiere acceso).
+El núcleo queda activo en **todos** los proyectos. Si prefieres instalarlo desde GitHub en vez de la carpeta local: `/plugin marketplace add jhogarciacu/claude-code-harness` (si el repo es privado, necesitas acceso).
 
-## Uso
-Pedirlo en lenguaje natural o con `@`:
+## Activar el arnés en un proyecto
+1. Crea la carpeta, ábrela con Claude Code y **acepta que confías en ella**. Sin eso, Claude Code ignora el `.claude/settings.json` del proyecto.
+2. Activa las áreas que el proyecto necesite. **Solo para este proyecto**, nunca a nivel de usuario. Hay dos formas:
+   - **Dentro de Claude Code:** abre `/plugin`, busca el área (por ejemplo `firmware`) en el marketplace `claude-code-harness`, elige **Install** y como alcance **project**.
+   - **Desde la terminal**, en la carpeta del proyecto, si tienes el comando `claude`:
+     ```bash
+     claude plugin install firmware@claude-code-harness --scope project
+     ```
+   Para el proyecto completo, instala `sistema`: trae las cinco áreas. Desde A-04 bastará con `/nuevo-proyecto firmware` o `/nuevo-proyecto sistema`, que además crea el `CLAUDE.md`, `Docs/` y el `.gitignore` del proyecto.
+3. Ejecuta `/reload-plugins`, o abre una sesión nueva.
+4. Comprueba. Al empezar la sesión, cada plugin activo anuncia "Arnés activo: <nombre> <versión>". También lo ves con `/plugin`.
+
+Las áreas quedan anotadas en el `.claude/settings.json` del proyecto, que se versiona con él. En otro computador, haz primero la instalación por computador y abre el proyecto. Si un área no aparece en el anuncio ni en `/plugin`, instálala otra vez con alcance **project**: según la documentación, un plugin anotado solo en el proyecto no siempre se carga hasta instalarlo en ese computador.
+
+| Quiero | Cómo |
+|---|---|
+| Agregar un área | `/plugin` → el área → Install → alcance *project* (o `claude plugin install <área>@claude-code-harness --scope project`) |
+| Pasar a proyecto completo | Instalar `sistema` en el proyecto |
+| Quitar un área | `/plugin` → deshabilitar, o poner `false` en `enabledPlugins` |
+| Saber qué tengo | La línea "Arnés activo" al empezar la sesión, o `/plugin` |
+
+## Uso de los agentes
+Pídelos en lenguaje natural o con `@`:
 - "usa el **verificador** antes de cerrar la tarea"
 - "pásale el **simplificador** a la rama" (o "...y aplica los cambios")
 - "que el **revisor** revise la rama antes del PR"
@@ -33,7 +55,7 @@ Pedirlo en lenguaje natural o con `@`:
 Orden recomendado al cerrar una tarea: **verificador → simplificador → revisor**.
 
 ## Hook de protección de hardware
-Viene con el plugin; no hay que configurar nada. Requiere `python3` (solo biblioteca estándar).
+Viene con `nucleo`, así que protege en **todos** los proyectos (decisión D-2); no hay que configurar nada. Requiere `python3` (solo biblioteca estándar).
 
 | Decisión | Ejemplos |
 |---|---|
@@ -48,19 +70,26 @@ Viene con el plugin; no hay que configurar nada. Requiere `python3` (solo biblio
 - Así, los commits y PR que **mencionan** estos comandos no se bloquean: `git commit -m "$(cat <<'EOF' … make fuses … EOF)"`, `git commit -m '… `espefuse burn_efuse` …'`, `gh pr create --body '…'`.
 
 **Límites:**
-- Analiza el texto del comando. Un script propio (`./grabar.sh`), un `Makefile` con un nombre de objetivo raro o un programa que llame a estas herramientas por dentro **no se detecta**. Por eso la regla también está en el CLAUDE.md global.
+- Analiza el texto del comando. Un script propio (`./grabar.sh`), un `Makefile` con un nombre de objetivo raro o un programa que llame a estas herramientas por dentro **no se detecta**. Por eso la regla también está escrita en el CLAUDE.md global.
 - `cargo run` con un runner de `probe-rs` o `espflash` en `.cargo/config.toml` graba la placa y **no se detecta**.
 - Puede pedir confirmación de más: con `make flash_test` o `make lock` (en Python también es un objetivo común), con un `python -c` o `curl -d` cuyo texto incluya "make fuses", o con más de 4 niveles de comandos anidados.
 
-Pruebas: `python3 -m unittest discover -s hooks -v`
+Código y pruebas: `plugins/nucleo/hooks/`.
+
+## Estructura y pruebas
+```
+.claude-plugin/marketplace.json   # lista los plugins del arnés
+plugins/<plugin>/                 # cada plugin: .claude-plugin/plugin.json, agents/, hooks/, reglas.md
+global/CLAUDE.md                  # reglas generales (enlazado a ~/.claude/CLAUDE.md)
+herramientas/validar.py           # valida marketplace, manifiestos, hooks y copias compartidas
+pruebas.sh                        # corre todas las verificaciones
+Docs/plan.md                      # tareas, verificación y decisiones
+```
+Antes de cada commit: `./pruebas.sh`
 
 ## Actualizar
 - El CLAUDE.md global es un enlace: basta con `git pull` en este repo.
-- Los agentes: `git pull` y luego `/plugin marketplace update claude-code-harness`. Subir `version` en `.claude-plugin/plugin.json` en cada cambio.
+- Los plugins: `git pull`, después `/plugin marketplace update claude-code-harness` y `/reload-plugins`. Sube la `version` del `plugin.json` del plugin que cambie.
 
 ## Plan
 Las tareas y decisiones del arnés están en [Docs/plan.md](Docs/plan.md).
-
-## Próximas piezas (propuestas, sin aprobar)
-- Comandos `/tarea <ID>`, `/cerrar-tarea` y `/sincronizar` para el flujo por tareas y ramas.
-- `/nuevo-proyecto`: crea la estructura `Docs/` (visión, requisitos, planes, interfaces y decisiones) y una plantilla de CLAUDE.md.

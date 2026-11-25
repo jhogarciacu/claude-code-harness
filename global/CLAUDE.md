@@ -35,10 +35,14 @@ Estas reglas aplican en cualquier proyecto. **Si el `CLAUDE.md` del proyecto dic
 - No publicar nada (repos públicos, artefactos, servicios externos) sin permiso explícito.
 - Validar en los dos lados lo que pueda causar daño físico o de datos.
 
-## Hardware y optimización
-- **Datos de hardware con fuente:** registros, pines, tiempos y límites eléctricos salen del datasheet, el manual de referencia o el esquemático, citando documento y sección. Si no están ahí, se pregunta. Nunca se inventan.
-- **Sin medición no hay optimización:** medir antes y después, en las mismas condiciones y el mismo hardware, y reportar los números (tiempo, ciclos, memoria, consumo).
-- **No grabar, borrar ni cambiar fuses sin un OK explícito.** Lo irreversible (eFuses, fuses, lock bits, option bytes, protección de lectura, OTP) lo ejecuta el responsable a mano. El hook del arnés lo refuerza, pero no ve dentro de los scripts propios.
+## Datos técnicos y acciones irreversibles
+- **Datos técnicos con fuente:** registros, pines, tiempos, límites eléctricos, APIs y parámetros salen de su documento de origen (datasheet, manual de referencia, esquemático, documentación oficial), citando documento y sección. Si no están ahí, se pregunta. Nunca se inventan.
+- **Nada irreversible sin un OK explícito:** grabar o borrar un dispositivo, tocar fuses, eFuses, lock bits, option bytes, protección de lectura u OTP, o escribir sobre un disco. Lo irreversible lo ejecuta el responsable a mano. El hook del núcleo lo refuerza, pero no ve dentro de los scripts propios.
+- **Sin medición no hay optimización:** medir antes y después, en las mismas condiciones y el mismo hardware, y reportar los números. *(Pasa al área `software` en A-06.)*
+
+## Áreas del arnés
+- El núcleo está activo en todos los proyectos. Las áreas (`firmware`, `hardware`, `software`, `ia` y `sistema` para el proyecto completo) se activan **por proyecto**, en su `.claude/settings.json`.
+- Al empezar la sesión, cada plugin activo anuncia "Arnés activo: <nombre> <versión>". No aplicar reglas de un área que no esté activa en el proyecto.
 
 ## Dependencias
 - Antes de agregar una dependencia, justificarla. Preferir las mantenidas y portables (Linux x86 y ARM64).

@@ -1,13 +1,14 @@
 {
   "name": "claude-code-harness",
+  "description": "Arnés de trabajo para Claude Code: un núcleo para todos los proyectos y áreas (firmware, hardware, software, ia, sistema) que se activan por proyecto.",
   "owner": {
     "name": "jhogarciacu"
   },
   "plugins": [
     {
-      "name": "arnes",
-      "source": "./",
-      "description": "Agentes revisor, simplificador y verificador, y hook de protección de hardware, con las reglas de trabajo propias."
+      "name": "nucleo",
+      "source": "./plugins/nucleo",
+      "description": "Siempre instalado: agentes verificador, simplificador y revisor, y protección de hardware al grabar firmware."
     }
   ]
 }
