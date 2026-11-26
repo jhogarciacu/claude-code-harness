@@ -1,0 +1,11 @@
+{
+  "name": "hardware",
+  "version": "0.1.0",
+  "description": "Capa hardware: KiCad, ERC/DRC, BOM y límites eléctricos.",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "dependencies": [
+    "arnes"
+  ]
+}

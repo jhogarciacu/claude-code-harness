@@ -1,0 +1,5 @@
+# IA: pesos, cachés y datos pesados
+*.safetensors
+*.gguf
+*.ckpt
+.cache/

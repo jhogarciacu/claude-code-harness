@@ -1,4 +1,4 @@
-"""Pruebas del hook anunciar.  Ejecutar: python3 -m unittest discover -s plugins/nucleo/hooks"""
+"""Pruebas del hook anunciar.  Ejecutar: python3 -m unittest discover -s plugins/arnes/hooks"""
 
 import json
 import os
@@ -26,9 +26,9 @@ def plugin_falso(raiz: str, manifiesto, reglas: str | None = None) -> None:
 class PruebasConstruir(unittest.TestCase):
     def test_sin_reglas_solo_anuncia(self):
         with tempfile.TemporaryDirectory() as raiz:
-            plugin_falso(raiz, {"name": "nucleo", "version": "0.3.0"})
+            plugin_falso(raiz, {"name": "arnes", "version": "0.5.0"})
             salida = construir(raiz)
-        self.assertEqual(salida["systemMessage"], "Arnés activo: nucleo 0.3.0")
+        self.assertEqual(salida["systemMessage"], "Arnés activo: arnes 0.5.0")
         self.assertEqual(salida["hookSpecificOutput"]["hookEventName"], "SessionStart")
         self.assertNotIn("Reglas", salida["hookSpecificOutput"]["additionalContext"])
 
@@ -64,11 +64,11 @@ class PruebasConstruir(unittest.TestCase):
 
 
 class PruebasScript(unittest.TestCase):
-    def test_anuncia_el_nucleo_real(self):
+    def test_anuncia_el_plugin_real(self):
         r = subprocess.run([sys.executable, SCRIPT], capture_output=True, text=True, timeout=10)
         self.assertEqual(r.returncode, 0, r.stderr)
         salida = json.loads(r.stdout)
-        self.assertTrue(salida["systemMessage"].startswith("Arnés activo: nucleo "))
+        self.assertTrue(salida["systemMessage"].startswith("Arnés activo: arnes "))
 
 
 if __name__ == "__main__":

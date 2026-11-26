@@ -4,10 +4,10 @@
 
 | ID | Tarea | Estado | Verificación |
 |---|---|---|---|
-| A-01 | Reglas de hardware y optimización en el CLAUDE.md global + hook que protege el hardware al grabar | Hecha, falta probarla en Claude Code | `python3 -m unittest discover -s hooks -v`: 10 pruebas en verde con 66 casos bloqueados, 77 con confirmación, 50 permitidos y 6 entradas inválidas. Incluyen los hallazgos del verificador, del simplificador y de las dos pasadas del revisor: bucles, `timeout`, `sudo -u`, `bash -lc`, `ssh`, `docker`, `git bisect run`, `option_write`, fuses UPDI, `make fuses`, y commits con heredoc o comillas invertidas que no deben bloquearse. Además: prueba de mutación (al quitar el tope de "texto que nadie ejecuta" fallan 8 casos), fuzz de 30 000 entradas sin excepciones y 2 000 segmentos en menos de 0.1 s. **No probado** dentro de Claude Code: el plugin no está instalado en este equipo |
-| A-02 | Estructura por áreas y plugin `nucleo` | Hecha, falta probarla en Claude Code | `./pruebas.sh` en verde con 35 pruebas: 18 del validador de estructura y 17 del hook de hardware y el anuncio de sesión, más la sintaxis de scripts. Comprobado que `pruebas.sh` sale con 1 si falla una prueba o si no se ejecuta ninguna. Cierre con verificador, simplificador (en paralelo con el revisor, porque solo propone) y revisor. Corregido lo que encontraron: comando de activación que la documentación no respalda, `reglas.md` que no está en UTF-8, validador frente a entradas mal formadas, plugins sin registrar, dependencias de otro marketplace, rutas con comillas en los hooks, tamaño de `reglas.md`, y `pruebas.sh` con cero pruebas. **No probado** dentro de Claude Code: instalar `nucleo`, ver los 3 agentes en `/agents` y ver la línea "Arnés activo" |
+| A-01 | Reglas de hardware y optimización en el CLAUDE.md global + hook que protege el hardware al grabar | Hecha y fusionada (PR #1); falta ver el hook en una sesión (ver A-02) | `python3 -m unittest discover -s hooks -v`: 10 pruebas en verde con 66 casos bloqueados, 77 con confirmación, 50 permitidos y 6 entradas inválidas. Incluyen los hallazgos del verificador, del simplificador y de las dos pasadas del revisor: bucles, `timeout`, `sudo -u`, `bash -lc`, `ssh`, `docker`, `git bisect run`, `option_write`, fuses UPDI, `make fuses`, y commits con heredoc o comillas invertidas que no deben bloquearse. Además: prueba de mutación (al quitar el tope de "texto que nadie ejecuta" fallan 8 casos), fuzz de 30 000 entradas sin excepciones y 2 000 segmentos en menos de 0.1 s. **No probado** dentro de Claude Code: el plugin no está instalado en este equipo |
+| A-02 | Estructura por áreas y plugin `nucleo` | Hecha y fusionada (PR #2); falta ver el hook en una sesión | `./pruebas.sh` en verde con 35 pruebas: 18 del validador de estructura y 17 del hook de hardware y el anuncio de sesión, más la sintaxis de scripts. Comprobado que `pruebas.sh` sale con 1 si falla una prueba o si no se ejecuta ninguna. Cierre con verificador, simplificador (en paralelo con el revisor, porque solo propone) y revisor. Corregido lo que encontraron: comando de activación que la documentación no respalda, `reglas.md` que no está en UTF-8, validador frente a entradas mal formadas, plugins sin registrar, dependencias de otro marketplace, rutas con comillas en los hooks, tamaño de `reglas.md`, y `pruebas.sh` con cero pruebas. **Probado en Claude Code 2.1.332 (2026-11-25):** `nucleo` instalado con `claude plugin install`. Una sesión nueva (`claude -p`) recibe "Arnés activo: nucleo 0.3.0" y tiene los agentes `nucleo:revisor`, `nucleo:simplificador` y `nucleo:verificador`. `claude plugin validate` pasa para el marketplace y para `nucleo`; solo avisa que falta un ícono. **Falta** ver el hook de hardware actuando dentro de una sesión: la prueba con `espefuse burn_efuse` la frenó el clasificador de permisos y queda para el responsable, sin placas conectadas |
 | A-03 | Plugin `firmware` | Pendiente | — |
-| A-04 | Skill `/nuevo-proyecto` | Pendiente | — |
+| A-04 | Comandos `/arnes:capas` y atajos por capa, y esqueleto de las cinco capas (va antes que A-03) | Hecha y probada en VSCode; falta el merge | `./pruebas.sh` en verde con 78 pruebas (43 de `arnes.py`). **Cambio de nombres, pedido por el responsable:** el plugin del núcleo pasa de `nucleo` a `arnes`, el menú es `/arnes:capas` y hay un atajo por capa; reinstalado en este equipo (`arnes` 0.5.0, 6 skills). Probado con `claude -p`: la sesión ve los seis comandos `arnes:…`, `/arnes:firmware` y luego `/arnes:software` dejan las dos capas activas, y la sesión siguiente anuncia arnes 0.5.0, firmware y software. Cierre con verificador, simplificador y revisor (en paralelo, porque ninguno modifica). Corregido lo que encontraron: `/arnes:capas` en la carpeta personal escribía el `settings.json` de usuario; aviso de capa que puede no cargar; escritura que rompía symlinks y permisos; errores de archivo con traceback; `Docs` como archivo; `completar` para no editar a mano; pasos del SKILL más claros. `claude plugin validate` pasa para el marketplace y las seis carpetas (solo avisos de ícono y licencia). **Probado con Claude Code 2.1.332 (`claude -p`) en una carpeta vacía:** `/arnes firmware software` activó las dos capas y preguntó antes de crear archivos; con el OK creó `CLAUDE.md` (con las secciones de revisión de las dos capas), `Docs/` y `.gitignore`; una sesión nueva en esa carpeta anunció nucleo 0.4.0, firmware 0.1.0 y software 0.1.0. Comprobado también: anotar `sistema` solo no carga nada, y anotar las cinco sí carga las cinco. **Probado en VSCode por el responsable (2026-11-26):** el plugin carga en la extensión (anuncio "Arnés activo: arnes 0.5.0", agentes y los seis comandos); en el repo del arnés `/arnes:capas` se niega, como se espera; en una carpeta de prueba muestra el selector de modo (proyecto completo o elegir capas) |
 | A-05 | Plugin `hardware` | Pendiente | — |
 | A-06 | Plugin `software` | Pendiente | — |
 | A-07 | Plugin `ia` | Pendiente | — |
@@ -26,17 +26,19 @@ Que cada proyecto cargue **solo lo que necesita**:
 
 ## Cómo se usa
 
-| Caso | Qué se activa en el proyecto | Cómo |
-|---|---|---|
-| Solo firmware | `firmware` (arrastra `nucleo`) | `/nuevo-proyecto firmware`, o `/plugin` → `firmware` → Install → alcance *project* |
-| Firmware + app de escritorio | `firmware` + `software` | `/nuevo-proyecto firmware software` |
-| Servidor MCP | `ia` | `/nuevo-proyecto ia` |
-| Producto completo | `sistema` (arrastra todas) | `/nuevo-proyecto sistema` |
+En cualquier proyecto se escribe **`/arnes:capas`** en el chat de Claude Code (VSCode o terminal). Muestra qué capas están activas, deja marcar las que se necesitan y aplica el cambio solo para ese proyecto.
 
-- La activación queda en el `.claude/settings.json` del proyecto (`enabledPlugins`), que se versiona con el proyecto. Al clonarlo en otro computador se activan las mismas áreas.
-- A nivel de usuario (en todos los proyectos) solo se instala `nucleo`.
-- Las áreas se instalan siempre **por proyecto**, nunca a nivel de usuario.
-- Agregar un área después a un proyecto existente es un solo paso: `/plugin` → el área → Install → alcance *project*.
+| Caso | Qué marcar en `/arnes:capas` |
+|---|---|
+| Solo firmware | `firmware` |
+| Firmware + app de escritorio | `firmware` y `software` |
+| Servidor MCP | `ia` |
+| Producto completo | `sistema` (trae las cinco) |
+
+- La activación queda en el `.claude/settings.json` del proyecto (`enabledPlugins`), que se versiona con el proyecto.
+- A nivel de usuario (en todos los proyectos) solo se instala `arnes` (núcleo).
+- Las áreas se activan siempre **por proyecto**, nunca a nivel de usuario.
+- Sin `/arnes:capas` también se puede, desde la terminal y en la carpeta del proyecto: `claude plugin install <área>@claude-code-harness --scope project`. El panel `/plugin` sirve en la terminal, pero no en la extensión de VSCode.
 
 ## Cómo activar el arnés en un proyecto
 
@@ -46,74 +48,41 @@ Que cada proyecto cargue **solo lo que necesita**:
    git clone git@github.com:jhogarciacu/claude-code-harness.git ~/Escritorio/proyectos/claude-arnes
    ~/Escritorio/proyectos/claude-arnes/instalar.sh
    ```
-2. Dentro de Claude Code (terminal o VSCode), registrar el marketplace e instalar el núcleo para todos los proyectos:
-   ```
-   /plugin marketplace add ~/Escritorio/proyectos/claude-arnes
-   /plugin install nucleo@claude-code-harness
-   ```
-   Desde aquí, cualquier carpeta tiene el núcleo: reglas generales, los 3 agentes, `/nuevo-proyecto` y la protección de hardware. Las áreas todavía no.
-
-### Cada proyecto nuevo
-1. Crear la carpeta y abrirla con Claude Code:
+2. Instalar Claude Code para terminal (si no está) y el núcleo, desde bash:
    ```bash
-   mkdir ~/Escritorio/proyectos/mi-sensor && cd ~/Escritorio/proyectos/mi-sensor
-   git init
-   code .        # o `claude` en la terminal
+   curl -fsSL https://claude.ai/install.sh | bash
+   claude plugin marketplace add ~/Escritorio/proyectos/claude-arnes
+   claude plugin install arnes@claude-code-harness
+   claude plugin list            # arnes@claude-code-harness debe salir ✔ enabled
    ```
-   Cuando pregunte si confías en la carpeta, responder que sí. Sin eso, Claude Code ignora la configuración del proyecto.
-2. Elegir las áreas con `/nuevo-proyecto`:
-   ```
-   /nuevo-proyecto firmware             ← solo firmware
-   /nuevo-proyecto firmware software    ← firmware + app
-   /nuevo-proyecto ia                   ← servidor MCP
-   /nuevo-proyecto sistema              ← producto completo (las cinco áreas)
-   ```
-   Pregunta el nombre y una descripción corta del proyecto, y crea estos archivos:
-   - `.claude/settings.json`, con las áreas activas y de dónde sale el marketplace.
-   - `CLAUDE.md`, con las listas de revisión de cada área y las secciones del proyecto: comandos, definición de terminado y carpetas protegidas.
-   - `Docs/`, con visión, requisitos, plan y decisiones.
-   - `.gitignore`, con lo propio de cada área.
-3. Ejecutar `/reload-plugins`, o abrir una sesión nueva.
-4. Comprobar. Al empezar la sesión, cada plugin activo anuncia una línea como `Arnés activo: firmware 0.1.0`. También se puede ver con `/plugin`.
+   Desde aquí, cualquier carpeta tiene el núcleo: reglas generales, los 3 agentes, `/arnes:capas` y la protección de hardware.
 
-Ejemplo del `.claude/settings.json` que queda en un proyecto de firmware:
-```json
-{
-  "extraKnownMarketplaces": {
-    "claude-code-harness": { "source": { "source": "github", "repo": "jhogarciacu/claude-code-harness" } }
-  },
-  "enabledPlugins": { "firmware@claude-code-harness": true }
-}
-```
-El marketplace se declara por GitHub y no por una ruta local, para que el proyecto funcione igual en otro computador.
+### Activar capas con `/arnes:capas`
+1. Abrir la carpeta del proyecto con Claude Code (`code .` o `claude`) y aceptar que se confía en ella. Sin eso, Claude Code ignora la configuración del proyecto.
+2. Escribir `/arnes:capas`. El comando:
+   1. **muestra el estado:** qué capas están activas en este proyecto;
+   2. **muestra la lista de capas** para marcar (selección múltiple). La lista sale del marketplace, así que cada capa nueva aparece sola;
+   3. **aplica la selección:** activa y desactiva capas solo en este proyecto;
+   4. **si la carpeta es nueva o le faltan piezas**, ofrece crear el `CLAUDE.md` (con las listas de revisión de cada capa y las secciones del proyecto: comandos, definición de terminado y carpetas protegidas), `Docs/` (visión, requisitos, plan y decisiones) y el `.gitignore` de cada capa. **Nunca sobrescribe:** si algo ya existe, propone lo que falta y espera el OK;
+   5. **recuerda el último paso:** abrir una conversación nueva para que las capas carguen. `/arnes:capas` no puede recargar la conversación en la que se ejecuta.
+3. En la conversación nueva, cada capa activa anuncia "Arnés activo: <capa> <versión>". Basta con preguntar "¿qué arnés está activo?".
 
-### Cambiar las áreas después
-| Quiero | Cómo |
-|---|---|
-| Agregar un área | `/plugin` → el área → Install → alcance *project* (o, en la terminal, `claude plugin install software@claude-code-harness --scope project`) |
-| Pasar a proyecto completo | Instalar `sistema` en el proyecto: trae las cinco áreas |
-| Quitar un área | `/plugin` → deshabilitar, o poner `false` en `enabledPlugins` |
-| Saber qué tengo | Las líneas "Arnés activo" al empezar la sesión, o `/plugin` |
-
-### Proyecto que ya existe
-Se usa el mismo `/nuevo-proyecto <áreas>`. **No sobrescribe nada.**
-- Si ya hay un `CLAUDE.md`, propone las secciones que le faltan y espera el OK.
-- Si ya hay un `.claude/settings.json`, solo agrega las áreas.
+Para cambiar las capas después, o para quitar alguna, se vuelve a escribir `/arnes:capas`.
 
 ### Clonar un proyecto en otro computador
 1. Hacer una vez la instalación por computador.
 2. Clonar el proyecto, abrirlo y confiar en la carpeta.
-3. Si un área no aparece en el anuncio ni en `/plugin`, instalarla en ese computador: `/plugin` → el área → Install → alcance *project*. Según la documentación oficial, un plugin activado solo en el `.claude/settings.json` del proyecto **no se carga hasta instalarlo en el computador**. Lo que sí hace Claude Code solo, después de confiar en la carpeta, es clonar el marketplace declarado. En A-04, `/nuevo-proyecto` dirá exactamente qué falta.
+3. Escribir `/arnes:capas`. Muestra las capas que el proyecto tiene anotadas. Si en ese computador el marketplace no viene de una carpeta local, avisa que una capa anotada puede no cargar y da el comando para instalarla (`claude plugin install <capa>@claude-code-harness --scope project`, en la terminal). Según la documentación oficial, un plugin anotado solo en el `.claude/settings.json` del proyecto no siempre se carga hasta instalarlo en el computador.
 
 ## Qué trae cada plugin
 
 | Plugin | Depende de | Contenido |
 |---|---|---|
-| `nucleo` | — | Agentes verificador, simplificador y revisor. Skill `/nuevo-proyecto`. Hook de protección de hardware (ver decisión D-2) |
-| `firmware` | `nucleo` | Reglas: no grabar ni tocar fuses sin OK, archivos generados de CubeMX, `sdkconfig` y Kconfig. Lista de revisión: `volatile`, ISR, pila, watchdog, endianness, timeouts de buses y estado seguro. Verificación: warnings como error, análisis estático y presupuesto de flash/RAM. El simplificador no toca drivers ni ISR sin OK |
-| `hardware` | `nucleo` | Reglas: ERC/DRC con `kicad-cli`, no editar `.kicad_*` a mano salvo que se pida, BOM con fuentes y límites eléctricos tomados del datasheet. Lista de revisión de esquemático y PCB |
-| `software` | `nucleo` | Reglas: sin medición no hay optimización (antes y después, mismas condiciones, números) y benchmarks reproducibles. Lista de revisión: concurrencia, memoria, complejidad y portabilidad x86/ARM64 |
-| `ia` | `nucleo` | Reglas: seguridad MCP (prompt injection, permisos mínimos de herramientas, secretos), evals aparte de las pruebas con mocks, no versionar pesos ni datasets, costo de las llamadas |
+| `arnes` (núcleo) | — | Agentes verificador, simplificador y revisor. Comandos `/arnes:capas` (menú) y `/arnes:firmware`, `/arnes:hardware`, `/arnes:software`, `/arnes:ia`, `/arnes:sistema` (atajos). Hook de protección de hardware (ver decisión D-2) |
+| `firmware` | `arnes` (núcleo) | Reglas: no grabar ni tocar fuses sin OK, archivos generados de CubeMX, `sdkconfig` y Kconfig. Lista de revisión: `volatile`, ISR, pila, watchdog, endianness, timeouts de buses y estado seguro. Verificación: warnings como error, análisis estático y presupuesto de flash/RAM. El simplificador no toca drivers ni ISR sin OK |
+| `hardware` | `arnes` (núcleo) | Reglas: ERC/DRC con `kicad-cli`, no editar `.kicad_*` a mano salvo que se pida, BOM con fuentes y límites eléctricos tomados del datasheet. Lista de revisión de esquemático y PCB |
+| `software` | `arnes` (núcleo) | Reglas: sin medición no hay optimización (antes y después, mismas condiciones, números) y benchmarks reproducibles. Lista de revisión: concurrencia, memoria, complejidad y portabilidad x86/ARM64 |
+| `ia` | `arnes` (núcleo) | Reglas: seguridad MCP (prompt injection, permisos mínimos de herramientas, secretos), evals aparte de las pruebas con mocks, no versionar pesos ni datasets, costo de las llamadas |
 | `sistema` | las cinco | Solo lo que une las capas: el protocolo entre capas tiene una única fuente (esquema) y se versiona; cambiar un lado obliga a cambiar el otro en la misma tarea; matriz de compatibilidad de versiones; pruebas de integración y HIL; trazabilidad de requisitos entre capas |
 
 `sistema` **no copia** las reglas de las áreas: las activa con `dependencies`. Así cada regla vive en un solo lugar.
@@ -122,7 +91,7 @@ Se usa el mismo `/nuevo-proyecto <áreas>`. **No sobrescribe nada.**
 Según la documentación oficial de plugins, el `CLAUDE.md` que está dentro de un plugin no se carga.
 
 - **Reglas que deben estar siempre activas:** cada área tiene un `reglas.md`, y el hook `SessionStart` (`hooks/anunciar.py`, el mismo en todos los plugins) lo inyecta al empezar la sesión y después de cada compactación. Solo se carga si el área está activa en el proyecto.
-- **Listas de revisión para los agentes:** `/nuevo-proyecto` las copia al `CLAUDE.md` del proyecto.
+- **Listas de revisión para los agentes:** `/arnes:capas` las copia al `CLAUDE.md` del proyecto.
 - **Confirmado en la documentación (A-02):** los subagentes cargan toda la jerarquía de `CLAUDE.md` (usuario y proyecto). No está documentado que reciban el contexto del `SessionStart`. Por eso las listas de revisión **van al `CLAUDE.md` del proyecto**, y el plugin no las inyecta.
 
 ## Estructura del repo
@@ -130,14 +99,14 @@ Según la documentación oficial de plugins, el `CLAUDE.md` que está dentro de 
 ```
 .claude-plugin/marketplace.json     # lista los 6 plugins
 plugins/
-  nucleo/     .claude-plugin/plugin.json · agents/ · skills/nuevo-proyecto/ · hooks/ (protección de hardware)
+  arnes/      .claude-plugin/plugin.json · agents/ · skills/capas/ y un skill por capa · hooks/ (protección de hardware)
   firmware/   .claude-plugin/plugin.json · reglas.md · revision.md · hooks/hooks.json (SessionStart)
   hardware/   ...igual que firmware
   software/   ...
   ia/         ...
   sistema/    .claude-plugin/plugin.json (dependencies: las cinco) · reglas.md · revision.md · hooks/
 global/CLAUDE.md                    # solo reglas generales (sale la sección de hardware)
-plantillas/                         # CLAUDE.md, .gitignore y Docs/ que usa /nuevo-proyecto
+plantillas/                         # CLAUDE.md, .gitignore y Docs/ que usa /arnes
 pruebas.sh                          # corre las pruebas de todos los plugins
 ```
 
@@ -147,26 +116,79 @@ pruebas.sh                          # corre las pruebas de todos los plugins
 |---|---|---|
 | A-02 | Pasar a `plugins/`. Convertir `arnes` en `nucleo`. Listar los plugins en el marketplace. Sacar la sección de hardware del CLAUDE.md global y dejar reglas generales: datos técnicos con fuente citada y nada irreversible sin OK. Agregar `pruebas.sh` y `herramientas/validar.py`. Anuncio "Arnés activo" con `SessionStart`. Consultar la documentación para saber si los subagentes ven el contexto de `SessionStart` | Pruebas del hook en verde desde su nueva ubicación. JSON válidos. Prueba manual del responsable: instalar `nucleo` y ver los 3 agentes en `/agents` |
 | A-03 | Plugin `firmware`: `reglas.md`, `revision.md` y `SessionStart`, con la línea "Arnés activo: …" | Prueba del `SessionStart` (imprime las reglas). En un proyecto de prueba con `firmware` activo, las reglas aparecen; en uno sin `firmware`, no |
-| A-04 | Skill `/nuevo-proyecto <áreas>`: escribe `.claude/settings.json` con `enabledPlugins` y `extraKnownMarketplaces`, `CLAUDE.md` con las listas de revisión y las secciones del proyecto (comandos, definición de terminado, carpetas protegidas), `Docs/` (visión, requisitos, plan, decisiones) y el `.gitignore` de cada área | Pruebas del generador con una sola área, con varias y con `sistema`. No sobrescribe archivos que ya existen |
+| A-04 | Comando `/arnes:capas` (skill del núcleo) y **esqueleto de las cinco capas**, para poder elegir capas desde ya. Ver "Detalle de A-04" | Ver "Detalle de A-04" |
 | A-05 | Plugin `hardware` | Igual que A-03 |
 | A-06 | Plugin `software` | Igual que A-03 |
 | A-07 | Plugin `ia` | Igual que A-03 |
 | A-08 | Plugin `sistema` con `dependencies` | Activar `sistema` en un proyecto de prueba activa las cinco áreas y sus reglas |
 
-Hago A-04 justo después de firmware para que puedas empezar a usar proyectos de un área cuanto antes.
+**Orden actualizado (decisión del responsable):** A-04 va primero. Crea `/arnes:capas` y el esqueleto de las cinco capas, y después A-03, A-05, A-06, A-07 y A-08 completan el contenido de cada capa sin cambiar cómo se activan.
+
+## Detalle de A-04
+
+### Flujo de `/arnes:capas`
+1. **Estado.** Ejecuta `arnes.py estado` y muestra: "Capas activas en este proyecto: …" y qué falta. Si el marketplace no viene de una carpeta local, avisa que una capa anotada puede no cargar y da el comando para instalarla. Se niega a trabajar en la carpeta personal, en `/` y en el repo del arnés, porque allí un cambio afectaría a todos los proyectos.
+2. **Primera pregunta** (una sola opción):
+   - **Proyecto completo (sistema)**
+   - **Elegir capas**
+   - **Quitar todas las capas**
+   - **Dejarlo como está**
+3. **Segunda pregunta**, solo si se elige "Elegir capas" (selección múltiple): `firmware`, `hardware`, `software`, `ia`. El texto de la pregunta dice cuáles están activas hoy; el selector de Claude Code no permite dejarlas marcadas. `sistema` va aparte porque el selector admite como máximo 4 opciones por pregunta. Si no se marca ninguna, no se aplica nada.
+4. **Aplicar.** Ejecuta `arnes.py aplicar <capas>`: activa las elegidas y desactiva las que se quitaron, solo en el `.claude/settings.json` del proyecto, sin tocar el resto de ese archivo. Después muestra el resultado.
+5. **Preparar el proyecto.** Si faltan `CLAUDE.md`, `Docs/` o `.gitignore`, pregunta si se crean desde las plantillas y ejecuta `arnes.py preparar`. **Nunca sobrescribe.** Lo que ya existe se deja intacto; si le faltan secciones de capa o líneas de `.gitignore`, se informan y, con el OK, `arnes.py completar` las agrega al final.
+6. **Cierre.** Pide abrir una conversación nueva para que las capas carguen, y preguntar ahí "¿qué arnés está activo?".
+
+### Esqueleto de cada capa
+Cada una de `firmware`, `hardware`, `software`, `ia` y `sistema` lleva:
+- `plugin.json`, versión 0.1.0. Las cuatro primeras dependen de `arnes` (núcleo); `sistema` depende de las cuatro.
+- `hooks/hooks.json` con `SessionStart` y una copia de `anunciar.py`, idéntica a la del núcleo. `validar.py` comprueba que lo sea.
+- `reglas.md` mínimo, con las reglas ya acordadas para esa capa y la nota "se completa en A-0x". La regla "sin medición no hay optimización" sale del CLAUDE.md global y pasa a `software`.
+
+### Archivos
+| Archivo | Qué es |
+|---|---|
+| `plugins/arnes/skills/capas/SKILL.md` | El comando: los pasos que sigue Claude y las preguntas que hace |
+| `plugins/arnes/skills/capas/arnes.py` | La lógica: `estado`, `aplicar`, `agregar`, `preparar`, `completar` y `seccion`. Biblioteca estándar |
+| `plugins/arnes/skills/capas/test_arnes.py` | Pruebas de la lógica |
+| `plugins/arnes/skills/{firmware,hardware,software,ia,sistema}/SKILL.md` | Atajos `/arnes:<capa>`: activan su capa con `arnes.py agregar` sin quitar las demás |
+| `plugins/arnes/skills/capas/plantillas/` | `CLAUDE.md`, `Docs/` (visión, requisitos, plan, decisiones) y `.gitignore` base, más una sección por capa |
+| `plugins/{firmware,hardware,software,ia,sistema}/` | El esqueleto de cada capa |
+| `.claude-plugin/marketplace.json` | Registra las cinco capas |
+| `global/CLAUDE.md`, `README.md`, `Docs/plan.md` | Mover la regla de medición, explicar el uso de `/arnes:capas` y registrar estado y decisiones |
+
+### Verificación
+- `test_arnes.py`:
+  - estado de un proyecto sin `.claude/`, con capas y con un `settings.json` que tiene otras claves;
+  - aplicar una capa, varias, `sistema`, y quitar todas;
+  - no tocar las otras claves del `settings.json`;
+  - `preparar` en una carpeta vacía y en una con archivos que ya existen (no los sobrescribe);
+  - JSON roto en el proyecto (error claro, sin destruir nada).
+- `./pruebas.sh` en verde, y `claude plugin validate` para el marketplace y las seis carpetas.
+- **Prueba real con `claude -p`** en una carpeta de prueba del scratchpad: aplicar `firmware` con `arnes.py` y comprobar que la sesión nueva anuncia "Arnés activo: firmware 0.1.0". Después, lo mismo con `sistema`, que debe anunciar las cinco capas.
+- **Prueba del responsable:** en VSCode y en la terminal, escribir `/arnes:capas`, elegir capas y abrir una conversación nueva.
+
+### Lo que se resolvió al construirla (comprobado con `claude -p`)
+- **Nombre:** Claude Code antepone el nombre del plugin a sus comandos. Por eso el plugin del núcleo se llama `arnes` y los comandos son `/arnes:capas` y `/arnes:<capa>`.
+- **Cómo aplicar:** basta con anotar la capa en el `.claude/settings.json` del proyecto. Con el marketplace agregado desde la carpeta local, la sesión siguiente la carga. No hace falta `claude plugin install`.
+- **`sistema`:** si se anota solo, Claude Code no carga nada (ni siquiera `sistema`), porque sus dependencias no están activas. Por eso `/arnes:sistema` (o `/arnes:capas sistema`) anota las cinco capas.
+- **Ruta del marketplace:** `arnes.py` lo encuentra en `~/.claude/plugins/known_marketplaces.json` y, si no está ahí, en la carpeta del repo donde vive el skill.
+
+### Fuera de alcance
+- `extraKnownMarketplaces` no se escribe en esta tarea, para no arriesgar que Claude Code reemplace la copia local por un clon de GitHub. Se resuelve cuando haga falta usar el arnés en otro computador.
+- El contenido completo de las listas de revisión de cada capa: va en A-03 y de A-05 a A-08.
 
 ## Decisiones propuestas (las confirmas al aprobar)
 - **D-1. Un solo repo y un solo marketplace, con un plugin por área.** Así hay una sola versión, una sola instalación y pruebas compartidas.
-- **D-2. El hook de protección de hardware se queda en `nucleo`, no en `firmware`.** Solo actúa cuando aparece una herramienta de grabación, así que en un proyecto de software no molesta. Si estuviera en `firmware`, dejaría de proteger justo en el proyecto donde alguien graba una placa "de paso". El área `firmware` aporta las reglas y la lista de revisión.
+- **D-2. El hook de protección de hardware se queda en `arnes` (núcleo), no en `firmware`.** Solo actúa cuando aparece una herramienta de grabación, así que en un proyecto de software no molesta. Si estuviera en `firmware`, dejaría de proteger justo en el proyecto donde alguien graba una placa "de paso". El área `firmware` aporta las reglas y la lista de revisión.
 - **D-3. `sistema` arrastra las áreas con `dependencies`, sin copiarlas.**
-- **D-4. Las áreas se instalan siempre por proyecto. A nivel de usuario va solo `nucleo`.**
+- **D-4. Las áreas se instalan siempre por proyecto. A nivel de usuario va solo `arnes` (núcleo).**
 
 ## Riesgos
-- **Cambio de nombre.** El plugin `arnes` pasa a llamarse `nucleo`. Hay que desinstalar `arnes` e instalar `nucleo`. Como `arnes` nunca se llegó a instalar, hoy esto no cuesta nada.
+- **Cambio de nombre.** En A-02 el plugin pasó de `arnes` a `nucleo`, y en A-04 volvió a `arnes` para que los comandos se lean `/arnes:…`. En cada computador donde estuviera `nucleo` hay que ejecutar `claude plugin uninstall nucleo@claude-code-harness` y `claude plugin install arnes@claude-code-harness`. En este equipo ya está hecho.
 - **Activar no es instalar.** `enabledPlugins` no instala nada. En cada computador hay que agregar el marketplace una vez. Además, Claude Code solo respeta el `.claude/settings.json` de un proyecto después de aceptar el diálogo de confianza de la carpeta.
 - **Prueba real pendiente.** `claude` no está en el PATH de esta terminal, así que la prueba dentro de Claude Code la haces tú en cada tarea. Te dejo los pasos exactos.
 - **Listas copiadas.** Las listas de revisión se copian al proyecto (ver arriba). Si después cambian en el arnés, hará falta un comando para sincronizarlas (queda como propuesta).
-- **Fuente del marketplace (A-04, posible).** En este computador el marketplace se agregó desde la carpeta local. Si el `extraKnownMarketplaces` que escribe `/nuevo-proyecto` lo declara desde GitHub con el mismo nombre, la documentación dice que Claude Code "lo vuelve a traer desde la nueva fuente", y podría reemplazar el marketplace local por un clon. Hay que probarlo en A-04 antes de elegir qué declarar.
+- **Fuente del marketplace (A-04, posible).** En este computador el marketplace se agregó desde la carpeta local. Si el `extraKnownMarketplaces` que escribe `/arnes:capas` lo declara desde GitHub con el mismo nombre, la documentación dice que Claude Code "lo vuelve a traer desde la nueva fuente", y podría reemplazar el marketplace local por un clon. Hay que probarlo en A-04 antes de elegir qué declarar.
 - **`/plugin install … --scope project` dentro de la sesión.** La documentación no respalda la bandera `--scope` ahí. Por eso el README usa el panel `/plugin` o la CLI `claude plugin install`.
 - **`systemMessage` en `SessionStart`.** La documentación dice que `systemMessage` se muestra al usuario, pero no confirma que funcione en `SessionStart`. Si no aparece, la línea igual llega a Claude por `additionalContext`, y basta con preguntarle qué arnés está activo.
 
@@ -190,7 +212,17 @@ Hago A-04 justo después de firmware para que puedas empezar a usar proyectos de
 | 2026-11-25 | Si la entrada no es válida, el hook deja pasar el comando (no lo bloquea) | Un error del hook no debe trabar todo el trabajo. La regla escrita en el CLAUDE.md sigue vigente |
 | 2026-11-25 | Regla en el CLAUDE.md global: los datos de hardware se toman de una fuente citada, y no hay optimización sin medición | Los proyectos son de electrónica, firmware y optimización |
 | 2026-11-25 | Las listas de revisión de cada área van al `CLAUDE.md` del proyecto; las reglas, por `SessionStart` | La documentación confirma que los subagentes cargan `CLAUDE.md`, pero no que reciban el contexto de `SessionStart` |
-| 2026-11-25 | La regla "sin medición no hay optimización" se queda en el CLAUDE.md global hasta que exista el área `software` (A-06) | Para no dejar un hueco mientras se construyen las áreas |
+| 2026-11-25 | La regla "sin medición no hay optimización" sale del CLAUDE.md global y pasa a `plugins/software/reglas.md` en A-04 (antes se había previsto para A-06) | Con el esqueleto de `software` ya existe dónde ponerla |
 | 2026-11-25 | `hooks/anunciar.py` es igual en todos los plugins; la copia canónica está en `nucleo` y `validar.py` comprueba que las demás coincidan | Los plugins se instalan aislados y no pueden leer archivos fuera de su carpeta |
 | 2026-11-25 | El validador solo acepta plugins con `source` local (`./…`) y versión x.y.z (con sufijo opcional) | Todos los plugins del arnés viven en este repo. Claude Code admite más formas, pero aquí no hacen falta |
+| 2026-11-25 | El punto de entrada es un solo comando, `/arnes`, que reemplaza a `/nuevo-proyecto`: muestra las capas, se marcan y se aplican, y prepara el proyecto si hace falta | El responsable quiere elegir capas desde el chat con una lista. Además, el panel `/plugin` no existe en la extensión de VSCode |
+| 2026-11-25 | El plugin del núcleo se llama `arnes`; el menú es `/arnes:capas` y hay atajos `/arnes:firmware`, `/arnes:hardware`, `/arnes:software`, `/arnes:ia` y `/arnes:sistema` | Claude Code antepone el nombre del plugin a sus comandos. Así, al escribir `/arnes` el usuario ve todas las opciones en la lista. Lo pidió el responsable |
+| 2026-11-25 | Los atajos activan su capa sin quitar las demás (`arnes.py agregar`); para quitar se usa `/arnes:capas` | Un atajo que reemplazara la selección borraría capas sin avisar |
+| 2026-11-25 | `/arnes` no trabaja en la carpeta personal, en `/` ni en el repo del arnés | En la carpeta personal, `.claude/settings.json` es el de usuario (activaría las capas en todos los proyectos) y un `CLAUDE.md` ahí se cargaría en todos los proyectos. Lo encontró el revisor |
+| 2026-11-25 | Todo cambio de archivos lo hace `arnes.py` (`aplicar`, `preparar`, `completar`); el modelo no edita a mano | Evita errores como pegar líneas al `.gitignore` sin salto final |
+| 2026-11-25 | `/arnes` activa capas escribiendo solo el `.claude/settings.json` del proyecto; `sistema` se anota junto con las cuatro capas | Comprobado con `claude -p`: con el marketplace local, anotar basta; `sistema` solo no carga sin sus dependencias activas |
+| 2026-11-25 | La plantilla de CLAUDE.md se llama `CLAUDE.plantilla.md` | Si se llamara `CLAUDE.md`, Claude Code la cargaría como instrucciones al trabajar en el repo del arnés |
+| 2026-11-25 | A-04 (`/arnes` y esqueleto de las cinco capas) va antes que A-03 | El responsable quiere poder elegir capas desde ya. El esqueleto hace que `/arnes` tenga algo real que activar |
+| 2026-11-25 | `/arnes` hace dos preguntas: primero el modo (sistema, elegir, quitar todo, dejar igual) y luego las capas | El selector de Claude Code admite como máximo 4 opciones por pregunta |
+| 2026-11-25 | En A-04 `/arnes` no escribe `extraKnownMarketplaces` | Evita que Claude Code reemplace el marketplace local por un clon de GitHub. En otro computador, `/arnes` instala lo que falte |
 | 2026-11-25 | El arnés se divide por áreas: `nucleo` + `firmware`, `hardware`, `software`, `ia`, y `sistema` para el proyecto completo | El responsable quiere poder trabajar con un área sola y, cuando haga falta, con el arnés completo. El nombre `sistema` lo eligió el responsable |

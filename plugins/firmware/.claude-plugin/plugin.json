@@ -1,0 +1,11 @@
+{
+  "name": "firmware",
+  "version": "0.1.0",
+  "description": "Capa firmware: reglas y revisión de firmware (datasheet, grabación segura, archivos generados).",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "dependencies": [
+    "arnes"
+  ]
+}

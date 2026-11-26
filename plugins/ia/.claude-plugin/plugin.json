@@ -1,0 +1,11 @@
+{
+  "name": "ia",
+  "version": "0.1.0",
+  "description": "Capa ia: seguridad MCP, evals, datasets y costos.",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "dependencies": [
+    "arnes"
+  ]
+}

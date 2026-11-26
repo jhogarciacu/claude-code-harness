@@ -33,7 +33,7 @@ from pathlib import Path
 _VERSION = re.compile(r"^\d+\.\d+\.\d+([-+][0-9A-Za-z.-]+)?$")
 # `${CLAUDE_PLUGIN_ROOT}/x`, `"${CLAUDE_PLUGIN_ROOT}"/x` y `$CLAUDE_PLUGIN_ROOT/x`.
 _RUTA_EN_COMANDO = re.compile(r"\$\{?CLAUDE_PLUGIN_ROOT\}?\"?/([^\"'\s;|&()]+)")
-ANUNCIAR_CANONICO = os.path.join("plugins", "nucleo", "hooks", "anunciar.py")
+ANUNCIAR_CANONICO = os.path.join("plugins", "arnes", "hooks", "anunciar.py")
 # Claude Code guarda en un archivo lo que pase de 10 000 caracteres; se deja margen
 # para la línea de anuncio que agrega anunciar.py.
 MAX_REGLAS = 9000

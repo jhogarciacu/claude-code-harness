@@ -6,9 +6,34 @@
   },
   "plugins": [
     {
-      "name": "nucleo",
-      "source": "./plugins/nucleo",
-      "description": "Siempre instalado: agentes verificador, simplificador y revisor, y protección de hardware al grabar firmware."
+      "name": "arnes",
+      "source": "./plugins/arnes",
+      "description": "Siempre instalado: /arnes:capas y atajos por capa, agentes verificador, simplificador y revisor, y protección de hardware al grabar firmware."
+    },
+    {
+      "name": "firmware",
+      "source": "./plugins/firmware",
+      "description": "Capa firmware: reglas y revisión de firmware (datasheet, grabación segura, archivos generados)."
+    },
+    {
+      "name": "hardware",
+      "source": "./plugins/hardware",
+      "description": "Capa hardware: KiCad, ERC/DRC, BOM y límites eléctricos."
+    },
+    {
+      "name": "software",
+      "source": "./plugins/software",
+      "description": "Capa software: optimización con medición, benchmarks y portabilidad."
+    },
+    {
+      "name": "ia",
+      "source": "./plugins/ia",
+      "description": "Capa ia: seguridad MCP, evals, datasets y costos."
+    },
+    {
+      "name": "sistema",
+      "source": "./plugins/sistema",
+      "description": "Proyecto completo: activa firmware, hardware, software e ia, y agrega el contrato entre capas."
     }
   ]
 }
