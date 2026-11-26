@@ -1,5 +1,5 @@
 {
-  "description": "Capa firmware del arnés: anuncia la capa e inyecta sus reglas al empezar la sesión.",
+  "description": "Capa firmware del arnés: anuncia la capa e inyecta sus reglas al empezar la sesión, y pide confirmación antes de editar archivos generados.",
   "hooks": {
     "SessionStart": [
       {
@@ -8,6 +8,18 @@
           {
             "type": "command",
             "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/anunciar.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/proteger_generados.py\"",
             "timeout": 10
           }
         ]

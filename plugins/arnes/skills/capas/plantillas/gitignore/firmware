@@ -1,5 +1,7 @@
 # Firmware
 build/
 .pio/
+managed_components/
+cmake-build-*/
 sdkconfig.old
 *.map

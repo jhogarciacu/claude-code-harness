@@ -1,7 +1,7 @@
 {
   "name": "firmware",
-  "version": "0.1.0",
-  "description": "Capa firmware: reglas y revisión de firmware (datasheet, grabación segura, archivos generados).",
+  "version": "0.2.0",
+  "description": "Capa firmware: reglas y revisión de firmware (datasheet, grabación segura, archivos generados, código sensible y verificación por herramienta) y confirmación antes de editar archivos generados.",
   "author": {
     "name": "jhogarciacu"
   },

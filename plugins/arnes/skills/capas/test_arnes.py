@@ -237,6 +237,21 @@ class PruebasPreparar(Base):
         self.assertEqual(informe["creados"], [])
         self.assertEqual(informe["faltan"], [])
 
+    def test_campos_de_firmware_solo_con_firmware(self):
+        arnes.preparar(self.proyecto, ["firmware"], "x", "y")
+        with open(os.path.join(self.proyecto, "CLAUDE.md"), encoding="utf-8") as f:
+            claude = f.read()
+        for texto in ("### Comandos de firmware", "Grabar (solo con OK)", "Presupuesto: flash",
+                      "### Reglas para los agentes", "**Simplificador:**"):
+            self.assertIn(texto, claude)
+        otro = tempfile.mkdtemp()
+        try:
+            arnes.preparar(otro, ["software"], "x", "y")
+            with open(os.path.join(otro, "CLAUDE.md"), encoding="utf-8") as f:
+                self.assertNotIn("Comandos de firmware", f.read())
+        finally:
+            shutil.rmtree(otro)
+
     def test_todas_las_capas_tienen_seccion(self):
         for capa in DISPONIBLES:
             with self.subTest(capa=capa):
