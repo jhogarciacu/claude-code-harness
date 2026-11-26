@@ -7,7 +7,7 @@
 
 Cada plugin del arnés lleva una copia idéntica de este archivo (los plugins se
 instalan aislados y no pueden leer archivos fuera de su carpeta). La copia
-canónica está en plugins/nucleo/hooks/; `herramientas/validar.py` comprueba que
+canónica está en plugins/arnes/hooks/; `herramientas/validar.py` comprueba que
 todas sean iguales.
 
 Si algo falla no imprime nada y sale con 0: un anuncio no debe trabar la sesión.

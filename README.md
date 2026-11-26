@@ -4,12 +4,14 @@ Arnés de trabajo propio para Claude Code. Tiene un **núcleo** que se instala u
 
 | Plugin | Estado | Qué trae |
 |---|---|---|
-| `nucleo` | ✅ disponible | Agentes verificador, simplificador y revisor. Protección de hardware al grabar firmware. Anuncio "Arnés activo" al empezar la sesión |
-| `firmware` | ⏳ A-03 | Reglas y lista de revisión de firmware |
-| `hardware` | ⏳ A-05 | KiCad: ERC/DRC, BOM y límites eléctricos |
-| `software` | ⏳ A-06 | Optimización con medición y benchmarks |
-| `ia` | ⏳ A-07 | Seguridad MCP, evals, datasets |
-| `sistema` | ⏳ A-08 | Proyecto completo: las cinco áreas y el contrato entre capas |
+| `arnes` (el núcleo) | ✅ 0.5.0 | Comandos `/arnes:capas` y atajos por capa, agentes verificador, simplificador y revisor, protección de hardware al grabar firmware y anuncio "Arnés activo" |
+| `firmware` | 🟡 esqueleto 0.1.0 (se completa en A-03) | Reglas de firmware: datasheet, grabación segura, archivos generados |
+| `hardware` | 🟡 esqueleto 0.1.0 (A-05) | KiCad: ERC/DRC, BOM y límites eléctricos |
+| `software` | 🟡 esqueleto 0.1.0 (A-06) | Optimización con medición, benchmarks y portabilidad |
+| `ia` | 🟡 esqueleto 0.1.0 (A-07) | Seguridad MCP, evals, datasets y costos |
+| `sistema` | 🟡 esqueleto 0.1.0 (A-08) | Proyecto completo: activa las cuatro capas y agrega el contrato entre capas |
+
+"Esqueleto" significa que la capa ya se puede activar, se anuncia y trae sus reglas principales; su lista de revisión completa llega en su tarea.
 
 Las reglas generales están en `global/CLAUDE.md`, enlazado a `~/.claude/CLAUDE.md`: español, tareas aprobadas, git por ramas, honestidad al reportar y seguridad. Los agentes leen además el `CLAUDE.md` de cada proyecto, y **las reglas del proyecto mandan** sobre las globales.
 
@@ -17,34 +19,32 @@ Las reglas generales están en `global/CLAUDE.md`, enlazado a `~/.claude/CLAUDE.
 ```bash
 git clone git@github.com:jhogarciacu/claude-code-harness.git ~/Escritorio/proyectos/claude-arnes
 ~/Escritorio/proyectos/claude-arnes/instalar.sh      # enlaza el CLAUDE.md global (respalda el que exista)
+curl -fsSL https://claude.ai/install.sh | bash        # Claude Code para terminal, si no está
+claude plugin marketplace add ~/Escritorio/proyectos/claude-arnes
+claude plugin install arnes@claude-code-harness
+claude plugin list                                    # arnes@claude-code-harness debe salir ✔ enabled
 ```
-Luego, dentro de Claude Code (terminal o VSCode):
-```
-/plugin marketplace add ~/Escritorio/proyectos/claude-arnes
-/plugin install nucleo@claude-code-harness
-```
-El núcleo queda activo en **todos** los proyectos. Si prefieres instalarlo desde GitHub en vez de la carpeta local: `/plugin marketplace add jhogarciacu/claude-code-harness` (si el repo es privado, necesitas acceso).
+El núcleo queda activo en **todos** los proyectos, tanto en la terminal como en VSCode. Los comandos `claude plugin …` se escriben en bash: la extensión de VSCode no tiene el panel `/plugin`.
 
-## Activar el arnés en un proyecto
-1. Crea la carpeta, ábrela con Claude Code y **acepta que confías en ella**. Sin eso, Claude Code ignora el `.claude/settings.json` del proyecto.
-2. Activa las áreas que el proyecto necesite. **Solo para este proyecto**, nunca a nivel de usuario. Hay dos formas:
-   - **Dentro de Claude Code:** abre `/plugin`, busca el área (por ejemplo `firmware`) en el marketplace `claude-code-harness`, elige **Install** y como alcance **project**.
-   - **Desde la terminal**, en la carpeta del proyecto, si tienes el comando `claude`:
-     ```bash
-     claude plugin install firmware@claude-code-harness --scope project
-     ```
-   Para el proyecto completo, instala `sistema`: trae las cinco áreas. Desde A-04 bastará con `/nuevo-proyecto firmware` o `/nuevo-proyecto sistema`, que además crea el `CLAUDE.md`, `Docs/` y el `.gitignore` del proyecto.
-3. Ejecuta `/reload-plugins`, o abre una sesión nueva.
-4. Comprueba. Al empezar la sesión, cada plugin activo anuncia "Arnés activo: <nombre> <versión>". También lo ves con `/plugin`.
+## Elegir las capas de un proyecto: `/arnes:…`
+Abre la carpeta del proyecto con Claude Code (`code .` o `claude`), **acepta que confías en ella** y escribe `/arnes` en el chat. Aparecen estos comandos:
 
-Las áreas quedan anotadas en el `.claude/settings.json` del proyecto, que se versiona con él. En otro computador, haz primero la instalación por computador y abre el proyecto. Si un área no aparece en el anuncio ni en `/plugin`, instálala otra vez con alcance **project**: según la documentación, un plugin anotado solo en el proyecto no siempre se carga hasta instalarlo en ese computador.
-
-| Quiero | Cómo |
+| Comando | Qué hace |
 |---|---|
-| Agregar un área | `/plugin` → el área → Install → alcance *project* (o `claude plugin install <área>@claude-code-harness --scope project`) |
-| Pasar a proyecto completo | Instalar `sistema` en el proyecto |
-| Quitar un área | `/plugin` → deshabilitar, o poner `false` en `enabledPlugins` |
-| Saber qué tengo | La línea "Arnés activo" al empezar la sesión, o `/plugin` |
+| `/arnes:capas` | **Menú.** Muestra las capas activas y pregunta qué quieres: proyecto completo, elegir capas (marcas varias), quitarlas todas o dejarlo como está |
+| `/arnes:firmware` | Activa la capa firmware, sin quitar las demás |
+| `/arnes:hardware` | Activa la capa hardware |
+| `/arnes:software` | Activa la capa software |
+| `/arnes:ia` | Activa la capa ia |
+| `/arnes:sistema` | Activa el proyecto completo: las cinco capas |
+
+- Para **quitar** capas, usa `/arnes:capas`. También acepta todo de una vez: `/arnes:capas firmware software` o `/arnes:capas ninguna`.
+- Si faltan `CLAUDE.md`, `Docs/` o `.gitignore`, cualquiera de los comandos te ofrece crearlos desde las plantillas. **Nunca sobrescribe**: de lo que ya existe, te propone lo que falta y espera tu OK.
+- **Abre una conversación nueva** para que las capas carguen y pregunta "¿qué arnés está activo?".
+- No trabajan en tu carpeta personal, en `/` ni en el repo del arnés, porque ahí un cambio afectaría a todos los proyectos.
+- *Probado en la terminal (`claude -p`) y en VSCode, incluido el selector de `/arnes:capas`.*
+
+Las capas quedan anotadas en el `.claude/settings.json` del proyecto, que se versiona con él. Con el marketplace agregado desde la carpeta local, anotarlas basta para que carguen. Para cambiarlas o quitarlas, usa `/arnes:capas`.
 
 ## Uso de los agentes
 Pídelos en lenguaje natural o con `@`:
@@ -55,7 +55,7 @@ Pídelos en lenguaje natural o con `@`:
 Orden recomendado al cerrar una tarea: **verificador → simplificador → revisor**.
 
 ## Hook de protección de hardware
-Viene con `nucleo`, así que protege en **todos** los proyectos (decisión D-2); no hay que configurar nada. Requiere `python3` (solo biblioteca estándar).
+Viene con el núcleo (plugin `arnes`), así que protege en **todos** los proyectos (decisión D-2); no hay que configurar nada. Requiere `python3` (solo biblioteca estándar).
 
 | Decisión | Ejemplos |
 |---|---|
@@ -74,7 +74,7 @@ Viene con `nucleo`, así que protege en **todos** los proyectos (decisión D-2);
 - `cargo run` con un runner de `probe-rs` o `espflash` en `.cargo/config.toml` graba la placa y **no se detecta**.
 - Puede pedir confirmación de más: con `make flash_test` o `make lock` (en Python también es un objetivo común), con un `python -c` o `curl -d` cuyo texto incluya "make fuses", o con más de 4 niveles de comandos anidados.
 
-Código y pruebas: `plugins/nucleo/hooks/`.
+Código y pruebas: `plugins/arnes/hooks/`.
 
 ## Estructura y pruebas
 ```
@@ -89,7 +89,8 @@ Antes de cada commit: `./pruebas.sh`
 
 ## Actualizar
 - El CLAUDE.md global es un enlace: basta con `git pull` en este repo.
-- Los plugins: `git pull`, después `/plugin marketplace update claude-code-harness` y `/reload-plugins`. Sube la `version` del `plugin.json` del plugin que cambie.
+- Los plugins: `git pull` y después, en bash, `claude plugin update <plugin>@claude-code-harness` (por ejemplo `arnes`). Abre una conversación nueva para que cargue. Sube la `version` del `plugin.json` del plugin que cambie.
+- **Cuidado con las ramas:** el marketplace se lee de esta carpeta, así que los plugins cargan desde la rama que tengas activa.
 
 ## Plan
 Las tareas y decisiones del arnés están en [Docs/plan.md](Docs/plan.md).

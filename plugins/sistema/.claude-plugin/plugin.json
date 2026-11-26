@@ -1,0 +1,15 @@
+{
+  "name": "sistema",
+  "version": "0.1.0",
+  "description": "Proyecto completo: activa firmware, hardware, software e ia, y agrega el contrato entre capas.",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "dependencies": [
+    "arnes",
+    "firmware",
+    "hardware",
+    "software",
+    "ia"
+  ]
+}

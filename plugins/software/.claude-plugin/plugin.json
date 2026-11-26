@@ -1,0 +1,11 @@
+{
+  "name": "software",
+  "version": "0.1.0",
+  "description": "Capa software: optimización con medición, benchmarks y portabilidad.",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "dependencies": [
+    "arnes"
+  ]
+}

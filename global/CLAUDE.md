@@ -38,11 +38,11 @@ Estas reglas aplican en cualquier proyecto. **Si el `CLAUDE.md` del proyecto dic
 ## Datos técnicos y acciones irreversibles
 - **Datos técnicos con fuente:** registros, pines, tiempos, límites eléctricos, APIs y parámetros salen de su documento de origen (datasheet, manual de referencia, esquemático, documentación oficial), citando documento y sección. Si no están ahí, se pregunta. Nunca se inventan.
 - **Nada irreversible sin un OK explícito:** grabar o borrar un dispositivo, tocar fuses, eFuses, lock bits, option bytes, protección de lectura u OTP, o escribir sobre un disco. Lo irreversible lo ejecuta el responsable a mano. El hook del núcleo lo refuerza, pero no ve dentro de los scripts propios.
-- **Sin medición no hay optimización:** medir antes y después, en las mismas condiciones y el mismo hardware, y reportar los números. *(Pasa al área `software` en A-06.)*
 
 ## Áreas del arnés
 - El núcleo está activo en todos los proyectos. Las áreas (`firmware`, `hardware`, `software`, `ia` y `sistema` para el proyecto completo) se activan **por proyecto**, en su `.claude/settings.json`.
 - Al empezar la sesión, cada plugin activo anuncia "Arnés activo: <nombre> <versión>". No aplicar reglas de un área que no esté activa en el proyecto.
+- Para ver o cambiar las capas de un proyecto: `/arnes:capas`, o los atajos `/arnes:firmware`, `/arnes:hardware`, `/arnes:software`, `/arnes:ia` y `/arnes:sistema`.
 
 ## Dependencias
 - Antes de agregar una dependencia, justificarla. Preferir las mantenidas y portables (Linux x86 y ARM64).

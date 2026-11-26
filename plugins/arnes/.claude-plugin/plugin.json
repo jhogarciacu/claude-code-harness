@@ -1,0 +1,16 @@
+{
+  "name": "arnes",
+  "version": "0.5.0",
+  "description": "Núcleo del arnés: comandos /arnes:capas y atajos /arnes:firmware, /arnes:hardware, /arnes:software, /arnes:ia y /arnes:sistema para elegir capas por proyecto; agentes verificador, simplificador y revisor; y protección de hardware al grabar firmware.",
+  "author": {
+    "name": "jhogarciacu"
+  },
+  "keywords": [
+    "revision",
+    "calidad",
+    "flujo-de-trabajo",
+    "espanol",
+    "firmware",
+    "hardware"
+  ]
+}

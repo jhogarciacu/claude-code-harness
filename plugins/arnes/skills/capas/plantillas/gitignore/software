@@ -1,0 +1,4 @@
+# Software
+.venv/
+node_modules/
+dist/

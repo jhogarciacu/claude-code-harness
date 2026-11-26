@@ -1,0 +1,17 @@
+{
+  "description": "Capa firmware del arnés: anuncia la capa e inyecta sus reglas al empezar la sesión.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact|fork",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/anunciar.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
