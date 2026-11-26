@@ -4,9 +4,9 @@ Arnés de trabajo propio para Claude Code. Tiene un **núcleo** que se instala u
 
 | Plugin | Estado | Qué trae |
 |---|---|---|
-| `arnes` (el núcleo) | ✅ 0.5.1 | Comandos `/arnes:capas` y atajos por capa, agentes verificador, simplificador y revisor, protección de hardware al grabar firmware y anuncio "Arnés activo" |
+| `arnes` (el núcleo) | ✅ 0.5.2 | Comandos `/arnes:capas` y atajos por capa, agentes verificador, simplificador y revisor, protección de hardware al grabar firmware y anuncio "Arnés activo" |
 | `firmware` | ✅ 0.2.0 | Reglas y lista de revisión de firmware: datasheet, grabación segura, archivos generados, código sensible y verificación según la herramienta (ESP-IDF, PlatformIO, Zephyr, CMake/Make). Pide confirmación antes de editar archivos generados (`sdkconfig`, `.ioc`, `*.pb.c`, HAL, build) y, en CubeMX, solo fuera de `USER CODE` |
-| `hardware` | 🟡 esqueleto 0.1.0 (A-05) | KiCad: ERC/DRC, BOM y límites eléctricos |
+| `hardware` | ✅ 0.2.0 | Reglas y lista de revisión de hardware: límites eléctricos y huellas con fuente, ERC/DRC y BOM con `kicad-cli`, fabricación y seguridad física. Pide confirmación antes de editar a mano archivos de KiCad (`.kicad_sch`, `.kicad_pcb`, librerías, `.kicad_pro`) y salidas de fabricación |
 | `software` | 🟡 esqueleto 0.1.0 (A-06) | Optimización con medición, benchmarks y portabilidad |
 | `ia` | 🟡 esqueleto 0.1.0 (A-07) | Seguridad MCP, evals, datasets y costos |
 | `sistema` | 🟡 esqueleto 0.1.0 (A-08) | Proyecto completo: activa las cuatro capas y agrega el contrato entre capas |

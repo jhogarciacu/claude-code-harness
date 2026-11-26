@@ -1,7 +1,7 @@
 {
   "name": "hardware",
-  "version": "0.1.0",
-  "description": "Capa hardware: KiCad, ERC/DRC, BOM y límites eléctricos.",
+  "version": "0.2.0",
+  "description": "Capa hardware: reglas y revisión de KiCad (límites eléctricos y huellas con fuente, ERC/DRC con kicad-cli, BOM con MPN, fabricación y seguridad física) y confirmación antes de editar archivos de KiCad a mano.",
   "author": {
     "name": "jhogarciacu"
   },

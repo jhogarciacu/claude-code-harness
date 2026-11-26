@@ -237,20 +237,32 @@ class PruebasPreparar(Base):
         self.assertEqual(informe["creados"], [])
         self.assertEqual(informe["faltan"], [])
 
-    def test_campos_de_firmware_solo_con_firmware(self):
-        arnes.preparar(self.proyecto, ["firmware"], "x", "y")
-        with open(os.path.join(self.proyecto, "CLAUDE.md"), encoding="utf-8") as f:
-            claude = f.read()
-        for texto in ("### Comandos de firmware", "Grabar (solo con OK)", "Presupuesto: flash",
-                      "### Reglas para los agentes", "**Simplificador:**"):
-            self.assertIn(texto, claude)
+    def test_campos_solo_con_su_capa(self):
+        campos = {
+            "firmware": ("### Comandos de firmware", "Grabar (solo con OK)", "Presupuesto: flash",
+                         "### Reglas para los agentes", "**Simplificador:**"),
+            "hardware": ("### Comandos de hardware", "kicad-cli sch erc", "kicad-cli pcb drc --schematic-parity",
+                         "### Reglas para los agentes", "no verificado en placa"),
+        }
         otro = tempfile.mkdtemp()
         try:
             arnes.preparar(otro, ["software"], "x", "y")
             with open(os.path.join(otro, "CLAUDE.md"), encoding="utf-8") as f:
-                self.assertNotIn("Comandos de firmware", f.read())
+                sin_capa = f.read()
         finally:
             shutil.rmtree(otro)
+        for capa, textos in campos.items():
+            with self.subTest(capa=capa):
+                proyecto = tempfile.mkdtemp()
+                try:
+                    arnes.preparar(proyecto, [capa], "x", "y")
+                    with open(os.path.join(proyecto, "CLAUDE.md"), encoding="utf-8") as f:
+                        claude = f.read()
+                finally:
+                    shutil.rmtree(proyecto)
+                for texto in textos:
+                    self.assertIn(texto, claude)
+                self.assertNotIn(textos[0], sin_capa)
 
     def test_todas_las_capas_tienen_seccion(self):
         for capa in DISPONIBLES:
